@@ -1,11 +1,12 @@
-* (TEST 1) Retrieve all files concurrently
+* (TEST 1) Retrieve quote.txt
 COMMENTS:
-Launches one 'curl' client per file to retrieve from the server and
-checks that all are successful.
+Downloads the file 'quote.txt' from HTTP server running locally and
+checks that the downloaded version matches the original version.
 
 ** program: bash -v
 
 ** --- Failure messages --- 
+- FAILURE(137) due to TIMEOUT: Runtime exceeded maximum of '10s'
 - FAILURE: Output Mismatch at lines marked
 
 ** --- Side by Side Differences ---
@@ -13,68 +14,11 @@ checks that all are successful.
 - Actual output in: test-results/raw/http_server-01-actual.tmp
 - Differing lines have a character like '|' '>' or '<' in the middle
 #+BEGIN_SRC sbs-diff
-==== EXPECT ====                                   ==== ACTUAL ====                                                                                                                                                                                
->> ./run_concurrent_server_tests.sh                >> ./run_concurrent_server_tests.sh
-Starting HTTP Server                               Starting HTTP Server
-Starting request for file quote.txt                Starting request for file quote.txt
-Starting request for file headers.html             Starting request for file headers.html
-Starting request for file index.html               Starting request for file index.html
-Starting request for file courses.txt              Starting request for file courses.txt
-Starting request for file mt2_practice.pdf         Starting request for file mt2_practice.pdf
-Starting request for file gatsby.txt               Starting request for file gatsby.txt
-Starting request for file africa.jpg               Starting request for file africa.jpg
-Starting request for file ocelot.jpg               Starting request for file ocelot.jpg
-Starting request for file hard_drive.png           Starting request for file hard_drive.png
-Starting request for file Lec01.pdf                Starting request for file Lec01.pdf
-Waiting for HTTP responses                         Waiting for HTTP responses
-                                                 > read_http_request failedfailed to readread_http_request failedcurl: (52) Empty reply from server
-                                                 > curl: (56) Recv failure: Connection reset bcyu rple:e r(
-                                                 > 56) Recv failure: Connection reset by peer
-                                                 > curl: (7) Failed to connect to localhost port 5402: Connection refused
-                                                 > curl: (7) Failed to connect to localhost port 5402: Connection refused
-                                                 > curl: (7) Failed to connect to localhost port 5402: Concneucrtli:o n( 7r)e fFuasielde
-                                                 > d to connect to localhost port 5402: Connection refused
-                                                 > cu./run_concurrent_server_tests.shrl: line :34:  9(477217) Failed to connect to localhost port 5 4Segmentation fault0 2     :L D_PRELOAD=./concurrent_open.so ./http_server server_files $PORTCo
-                                                 > nnection refused
-                                                 > curl: (7) Failed to connect to localhost port 5402: Connection refused
-                                                 > curl: (7) Failed to connect to localhost port 5402: Connection refused
-All HTTP responses received                        All HTTP responses received
-Sending SIGINT to trigger server shutdown          Sending SIGINT to trigger server shutdown
-                                                 > ./run_concurrent_server_tests.sh: line 41: kill: (947721) - No such process
-Server has terminated                              Server has terminated
-                                                 > Files server_files/quote.txt and downloaded_files/quote.txt differ
-                                                 > Files server_files/headers.html and downloaded_files/headers.html differ
-                                                 > Files server_files/index.html and downloaded_files/index.html differ
-                                                 > Files server_files/courses.txt and downloaded_files/courses.txt differ
-                                                 > Files server_files/mt2_practice.pdf and downloaded_files/mt2_practice.pdf differ
-                                                 > Files server_files/gatsby.txt and downloaded_files/gatsby.txt differ
-                                                 > Files server_files/africa.jpg and downloaded_files/africa.jpg differ
-                                                 > Files server_files/ocelot.jpg and downloaded_files/ocelot.jpg differ
-                                                 > Files server_files/hard_drive.png and downloaded_files/hard_drive.png differ
-                                                 > Files server_files/Lec01.pdf and downloaded_files/Lec01.pdf differ
+==== EXPECT ====                                                              ==== ACTUAL ====                                                           
+>> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt   >> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt
+>> diff -q server_files/quote.txt downloaded_files/quote.txt                <
 #+END_SRC
 
 ** --- Line Differences ---
-ACTUAL:  14) read_http_request failedfailed to readread_http_request failedcurl: (52) Empty reply from server
-ACTUAL:  15) curl: (56) Recv failure: Connection reset bcyu rple:e r(
-ACTUAL:  16) 56) Recv failure: Connection reset by peer
-ACTUAL:  17) curl: (7) Failed to connect to localhost port 5402: Connection refused
-ACTUAL:  18) curl: (7) Failed to connect to localhost port 5402: Connection refused
-ACTUAL:  19) curl: (7) Failed to connect to localhost port 5402: Concneucrtli:o n( 7r)e fFuasielde
-ACTUAL:  20) d to connect to localhost port 5402: Connection refused
-ACTUAL:  21) cu./run_concurrent_server_tests.shrl: line :34:  9(477217) Failed to connect to localhost port 5 4Segmentation fault0 2     :L D_PRELOAD=./concurrent_open.so ./http_server server_files $PORTCo
-ACTUAL:  22) nnection refused
-ACTUAL:  23) curl: (7) Failed to connect to localhost port 5402: Connection refused
-ACTUAL:  24) curl: (7) Failed to connect to localhost port 5402: Connection refused
-ACTUAL:  27) ./run_concurrent_server_tests.sh: line 41: kill: (947721) - No such process
-ACTUAL:  29) Files server_files/quote.txt and downloaded_files/quote.txt differ
-ACTUAL:  30) Files server_files/headers.html and downloaded_files/headers.html differ
-ACTUAL:  31) Files server_files/index.html and downloaded_files/index.html differ
-ACTUAL:  32) Files server_files/courses.txt and downloaded_files/courses.txt differ
-ACTUAL:  33) Files server_files/mt2_practice.pdf and downloaded_files/mt2_practice.pdf differ
-ACTUAL:  34) Files server_files/gatsby.txt and downloaded_files/gatsby.txt differ
-ACTUAL:  35) Files server_files/africa.jpg and downloaded_files/africa.jpg differ
-ACTUAL:  36) Files server_files/ocelot.jpg and downloaded_files/ocelot.jpg differ
-ACTUAL:  37) Files server_files/hard_drive.png and downloaded_files/hard_drive.png differ
-ACTUAL:  38) Files server_files/Lec01.pdf and downloaded_files/Lec01.pdf differ
+EXPECT:   2) >> diff -q server_files/quote.txt downloaded_files/quote.txt
 

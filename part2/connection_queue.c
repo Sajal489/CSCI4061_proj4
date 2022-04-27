@@ -96,7 +96,9 @@ int connection_dequeue(connection_queue_t *queue) {
             fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
             return -1;
         }
-        return queue->client_fds[queue->length--];
+        int temp = queue->client_fds[queue->length-1];
+        queue->length--;
+        return temp;
     }    
     return 0;
 }
