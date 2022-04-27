@@ -1,0 +1,113 @@
+#+TITLE: HTTP Server Tests
+#+TESTY: PREFIX="http_server"
+#+TESTY: TIMEOUT="10s"
+#+TESTY: SHOW=1
+
+* Retrieve quote.txt
+Downloads the file 'quote.txt' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt
+>> diff -q server_files/quote.txt downloaded_files/quote.txt
+#+END_SRC sh
+
+
+* Retrieve headers.html
+Downloads the file 'headers.html' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/headers.html > downloaded_files/headers.html
+>> diff -q server_files/headers.html downloaded_files/headers.html
+#+END_SRC sh
+
+
+* Retrieve index.html
+Downloads the file 'index.html' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/index.html > downloaded_files/index.html
+>> diff -q server_files/index.html downloaded_files/index.html
+#+END_SRC sh
+
+
+* Retrieve courses.txt
+Downloads the file 'courses.txt' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/courses.txt > downloaded_files/courses.txt
+>> diff -q server_files/courses.txt downloaded_files/courses.txt
+#+END_SRC sh
+
+
+* Retrieve mt2_practice.pdf
+Downloads the file 'mt2_practice.pdf' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/mt2_practice.pdf > downloaded_files/mt2_practice.pdf
+>> diff -q server_files/mt2_practice.pdf downloaded_files/mt2_practice.pdf
+#+END_SRC sh
+
+
+* Retrieve gatsby.txt
+Downloads the file 'gatsby.txt' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/gatsby.txt > downloaded_files/gatsby.txt
+>> diff -q server_files/gatsby.txt downloaded_files/gatsby.txt
+#+END_SRC sh
+
+
+* Retrieve africa.jpg
+Downloads the file 'africa.jpg' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/africa.jpg > downloaded_files/africa.jpg
+>> diff -q server_files/africa.jpg downloaded_files/africa.jpg
+#+END_SRC sh
+
+
+* Retrieve ocelot.jpg
+Downloads the file 'ocelot.jpg' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/ocelot.jpg > downloaded_files/ocelot.jpg
+>> diff -q server_files/ocelot.jpg downloaded_files/ocelot.jpg
+#+END_SRC sh
+
+
+* Retrieve hard_drive.png
+Downloads the file 'hard_drive.png' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/hard_drive.png > downloaded_files/hard_drive.png
+>> diff -q server_files/hard_drive.png downloaded_files/hard_drive.png
+#+END_SRC sh
+
+
+* Retrieve Lec01.pdf
+Downloads the file 'Lec01.pdf' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+#+BEGIN_SRC sh
+>> curl -s -S http://localhost:$PORT/Lec01.pdf > downloaded_files/Lec01.pdf
+>> diff -q server_files/Lec01.pdf downloaded_files/Lec01.pdf
+#+END_SRC sh
+
+
+* Attempt to Retrieve Non-Existent File
+Requests the file 'affordable_gpu' from HTTP server running locally and
+verifies that a response with a 404 status code is received.
+#+BEGIN_SRC sh
+>> curl -s -S -w "Response Status Code: %{http_code}\n" http://localhost:$PORT/affordable_qpu.txt
+Response Status Code: 404
+#+END_SRC sh
+
