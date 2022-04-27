@@ -34,8 +34,8 @@ void *thread_func(void *arg)
     printf("New client connected\n");
     char resource_name[512];
     bzero(resource_name, sizeof(resource_name));
-    printf("%s bing", resource_name);
-    printf("%d bong", new_socket);
+    printf("%s bing\n", resource_name);
+    printf("%d bong\n", new_socket);
 
     if (read_http_request(new_socket, resource_name) != 0)
     {
@@ -43,7 +43,7 @@ void *thread_func(void *arg)
         close(new_socket);
         return NULL;
     }
-    printf("%s bing", resource_name);
+    printf("%s BOOP\n", resource_name);
     printf("HERE1\n");
 
     printf("HERE2\n");
@@ -57,7 +57,7 @@ void *thread_func(void *arg)
     else
         strcat(path, resource_name);
 
-    printf("HERE4\n");
+    printf("%s\n", path);
     if (write_http_response(new_socket, path) != 0)
     {
         fprintf(stderr, "write_http_request failed");

@@ -1,7 +1,7 @@
-* (TEST 1) Retrieve quote.txt
+* (TEST 1) Retrieve all files concurrently
 COMMENTS:
-Downloads the file 'quote.txt' from HTTP server running locally and
-checks that the downloaded version matches the original version.
+Launches one 'curl' client per file to retrieve from the server and
+checks that all are successful.
 
 ** program: bash -v
 
@@ -14,11 +14,72 @@ checks that the downloaded version matches the original version.
 - Actual output in: test-results/raw/http_server-01-actual.tmp
 - Differing lines have a character like '|' '>' or '<' in the middle
 #+BEGIN_SRC sbs-diff
-==== EXPECT ====                                                              ==== ACTUAL ====                                                           
->> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt   >> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt
->> diff -q server_files/quote.txt downloaded_files/quote.txt                <
+==== EXPECT ====                                   ==== ACTUAL ====                                                                                                                            
+>> ./run_concurrent_server_tests.sh                >> ./run_concurrent_server_tests.sh
+Starting HTTP Server                               Starting HTTP Server
+Starting request for file quote.txt                Starting request for file quote.txt
+Starting request for file headers.html             Starting request for file headers.html
+Starting request for file index.html               Starting request for file index.html
+Starting request for file courses.txt              Starting request for file courses.txt
+Starting request for file mt2_practice.pdf         Starting request for file mt2_practice.pdf
+Starting request for file gatsby.txt               Starting request for file gatsby.txt
+Starting request for file africa.jpg               Starting request for file africa.jpg
+Starting request for file ocelot.jpg               Starting request for file ocelot.jpg
+Starting request for file hard_drive.png           Starting request for file hard_drive.png
+Starting request for file Lec01.pdf                Starting request for file Lec01.pdf
+Waiting for HTTP responses                         Waiting for HTTP responses
+All HTTP responses received                      | ccuurrll::  ((77))  FFaaiilleedd  ttoo  ccoonnnneecctt  ttoo  llooccaallhhoosstt  ppoorrtt  44006666::  CCoonnnneeccttiioonn  rreeffuusseedd
+Sending SIGINT to trigger server shutdown        |
+Server has terminated                            | cucrulr:l :( 7()7 )F aFialielde dt ot oc ocnonnencetc tt ot ol olcoaclahlohsots tp oprotr t4 046066:6 :C oCnonnencetcitoino nr erfeufsuesde
+                                                 > d
+                                                 > HTTP/1.0 200 OK                                                                                                                                               
+                                                 > Content-Type: text/plain
+                                                 > Content-Length: 68                                                                                                                                               
+                                                 >                                                                                                                                                
+                                                 > HTTP/1.0 200 OK                                                                                                                                               
+                                                 > Content-Type: image/png
+                                                 > Content-Length: 1681872                                                                                                                                               
+                                                 >                                                                                                                                                
+                                                 > HTTP/1.0 200 OK                                                                                                                                               
+                                                 > Content-Type: application/pdf
+                                                 > Content-Length: 1928242                                                                                                                                               
+                                                 >                                                                                                                                                
+                                                 > HTTP/1.0 200 OK                                                                                                                                               
+                                                 > Content-Type: image/jpeg
+                                                 > Content-Length: 1186359                                                                                                                                               
+                                                 >                                                                                                                                                
+                                                 > HTTP/1.0 200 OK                                                                                                                                               
+                                                 > Content-Type: text/html
+                                                 > Content-Length: 229                                                                                                                                               
+                                                 >                                                                                                                                                
 #+END_SRC
 
 ** --- Line Differences ---
-EXPECT:   2) >> diff -q server_files/quote.txt downloaded_files/quote.txt
+EXPECT:  14) All HTTP responses received
+EXPECT:  15) Sending SIGINT to trigger server shutdown
+EXPECT:  16) Server has terminated
+ACTUAL:  14) ccuurrll::  ((77))  FFaaiilleedd  ttoo  ccoonnnneecctt  ttoo  llooccaallhhoosstt  ppoorrtt  44006666::  CCoonnnneeccttiioonn  rreeffuusseedd
+ACTUAL:  15) 
+ACTUAL:  16) cucrulr:l :( 7()7 )F aFialielde dt ot oc ocnonnencetc tt ot ol olcoaclahlohsots tp oprotr t4 046066:6 :C oCnonnencetcitoino nr erfeufsuesde
+ACTUAL:  17) d
+ACTUAL:  18) HTTP/1.0 200 OK
+ACTUAL:  19) Content-Type: text/plain
+ACTUAL:  20) Content-Length: 68
+ACTUAL:  21) 
+ACTUAL:  22) HTTP/1.0 200 OK
+ACTUAL:  23) Content-Type: image/png
+ACTUAL:  24) Content-Length: 1681872
+ACTUAL:  25) 
+ACTUAL:  26) HTTP/1.0 200 OK
+ACTUAL:  27) Content-Type: application/pdf
+ACTUAL:  28) Content-Length: 1928242
+ACTUAL:  29) 
+ACTUAL:  30) HTTP/1.0 200 OK
+ACTUAL:  31) Content-Type: image/jpeg
+ACTUAL:  32) Content-Length: 1186359
+ACTUAL:  33) 
+ACTUAL:  34) HTTP/1.0 200 OK
+ACTUAL:  35) Content-Type: text/html
+ACTUAL:  36) Content-Length: 229
+ACTUAL:  37) 
 
