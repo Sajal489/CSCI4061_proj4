@@ -1,0 +1,24 @@
+* (TEST 1) Retrieve quote.txt
+COMMENTS:
+Downloads the file 'quote.txt' from HTTP server running locally and
+checks that the downloaded version matches the original version.
+
+** program: bash -v
+
+** --- Failure messages --- 
+- FAILURE(137) due to TIMEOUT: Runtime exceeded maximum of '10s'
+- FAILURE: Output Mismatch at lines marked
+
+** --- Side by Side Differences ---
+- Expect output in: test-results/raw/http_server-01-expect.tmp
+- Actual output in: test-results/raw/http_server-01-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+#+BEGIN_SRC sbs-diff
+==== EXPECT ====                                                              ==== ACTUAL ====                                                           
+>> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt   >> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt
+>> diff -q server_files/quote.txt downloaded_files/quote.txt                <
+#+END_SRC
+
+** --- Line Differences ---
+EXPECT:   2) >> diff -q server_files/quote.txt downloaded_files/quote.txt
+
