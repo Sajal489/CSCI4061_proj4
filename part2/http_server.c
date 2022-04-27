@@ -18,16 +18,61 @@
 
 int keep_going = 1;
 const char *serve_dir;
+connection_queue_t queue;
 
 void handle_sigint(int signo)
 {
+    connection_queue_shutdown(&queue); // error check
     keep_going = 0;
 }
-void *thread_func(){return NULL;}
+void *thread_func(void *arg)
+{
+    int favi = *((int*) arg);
+    if (!favi)
+        printf("Wating for client connection\n");
+
+    int new_socket = connection_dequeue(&queue);
+
+    if (!favi)
+        printf("New client connected\n");
+    favi = 0;
+    char resource_name[512];
+    bzero(resource_name, sizeof(resource_name));
+
+    if (read_http_request(new_socket, resource_name) != 0)
+    {
+        fprintf(stderr, "read_http_request failed");
+        close(new_socket);
+        return NULL;
+    }
+    if (strcmp(resource_name, "/favicon.ico") == 0)
+    {
+        favi = 1;
+        return NULL;
+    }
+
+    char path[512];
+    bzero(path, sizeof(path));
+    strcat(path, serve_dir);
+    if (strcmp(resource_name, "/") == 0)
+        strcat(path, "/index.html");
+    else
+        strcat(path, resource_name);
+
+    if (write_http_response(new_socket, path) != 0)
+    {
+        fprintf(stderr, "write_http_request failed");
+        close(new_socket);
+        return NULL;
+    }
+    close(new_socket);
+    return NULL;
+}
 
 int main(int argc, char **argv)
 {
     // First command is directory to serve, second command is port
+
     if (argc != 3)
     {
         printf("Usage: %s <directory> <port>\n", argv[0]);
@@ -35,6 +80,7 @@ int main(int argc, char **argv)
     }
     const char *serve_dir = argv[1];
     const char *port = argv[2];
+    printf("%s", serve_dir);
 
     struct sigaction sigact;
     sigact.sa_handler = handle_sigint;
@@ -74,6 +120,7 @@ int main(int argc, char **argv)
         close(sock_fd);
         return 1;
     }
+
     freeaddrinfo(server);
 
     if (listen(sock_fd, LISTEN_QUEUE_LEN) == -1)
@@ -82,7 +129,7 @@ int main(int argc, char **argv)
         close(sock_fd);
         return 1;
     }
-    connection_queue_t queue;
+
     if (connection_queue_init(&queue) == -1)
     {
         fprintf(stderr, "Failed to initialize the queue\n");
@@ -94,74 +141,43 @@ int main(int argc, char **argv)
     int favi = 0;
     sigset_t mask, old_set;
     sigfillset(&mask);
-    sigprocmask(SIG_SETMASK, &mask, &old_set);
+    sigprocmask(SIG_BLOCK, &mask, &old_set);
     for (int i = 0; i < N_THREADS; i++)
     {
-        if ((result = pthread_create(threads + i, NULL,&thread_func, NULL)) == -1)
+        if ((result = pthread_create(threads + i, NULL, thread_func, &favi)) == -1)
         {
             fprintf(stderr, "pthread_create: %s\n", strerror(result));
             return 1;
-        }
-        if (!favi)
-            printf("Wating for client connection\n");
-
-        int new_socket = connection_dequeue(&queue);
-        if (!favi)
-            printf("New client connected\n");
-        favi = 0;
-        char resource_name[512];
-        bzero(resource_name, sizeof(resource_name));
-
-        if (read_http_request(new_socket, resource_name) != 0)
-        {
-            fprintf(stderr, "read_http_request failed");
-            close(new_socket);
-            break;
-        }
-        if (strcmp(resource_name, "/favicon.ico") == 0)
-        {
-            favi = 1;
-            continue;
-        }
-
-        char path[512];
-        bzero(path, sizeof(path));
-        strcat(path, serve_dir);
-        if (strcmp(resource_name, "/") == 0)
-            strcat(path, "/index.html");
-        else
-            strcat(path, resource_name);
-
-        if (write_http_response(new_socket, path) != 0)
-        {
-            fprintf(stderr, "write_http_request failed");
-            close(new_socket);
-            break;
         }
     }
     sigprocmask(SIG_SETMASK, &old_set, NULL);
     while (keep_going != 0)
     {
         int new_socket = accept(sock_fd, NULL, NULL);
-        if (new_socket < 0){
-            if (errno != EINTR){
+        if (new_socket < 0)
+        {
+            if (errno != EINTR)
+            {
                 perror("accept connection");
                 close(sock_fd);
                 return 1;
             }
-            else break;
+            else
+                break;
         }
         connection_enqueue(&queue, new_socket);
     }
-    
+
     if (close(sock_fd) == -1)
     {
         perror("close");
         return 1;
     }
-    connection_queue_shutdown(&queue);
-    for(int i = 0; i < N_THREADS; i++){
-        if(pthread_join(threads[i], NULL) != 0){
+    connection_queue_free(&queue);
+    for (int i = 0; i < N_THREADS; i++)
+    {
+        if (pthread_join(threads[i], NULL) != 0)
+        {
             fprintf(stderr, "Failed to join threads\n");
             return 1;
         }
