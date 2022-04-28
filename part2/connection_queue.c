@@ -9,7 +9,7 @@ int connection_queue_init(connection_queue_t *queue) {
     // initialize syncrhonization primitives
     // mutexes and condition variables
     memset(&queue->client_fds, 0, sizeof(int)*CAPACITY);
-    queue->length = 0;
+    queue->length = CAPACITY;
     queue->read_idx = 0; 
     queue->write_idx = 0;
     queue->shutdown = 1; // change to 0 for shutdown
@@ -36,7 +36,7 @@ int connection_enqueue(connection_queue_t *queue, int connection_fd) {
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
         return -1;
     }
-    while (queue->length == CAPACITY) {
+    while (queue->length == queue->write_idx-1) {
         if ((result = pthread_cond_wait(&queue->queue_full, &queue->lock)) != 0) {
             fprintf(stderr, "pthread_cond_wait: %s\n", strerror(result));
             return -1;
@@ -51,11 +51,7 @@ int connection_enqueue(connection_queue_t *queue, int connection_fd) {
         return -1;
     } else {
         queue->client_fds[queue->write_idx] = connection_fd;
-        queue->length++;
         queue->write_idx++;
-        if (queue->write_idx < 4) {
-            queue->write_idx = 0;
-        }
         if ((result = pthread_cond_signal(&queue->queue_empty)) != 0) {
             fprintf(stderr, "pthread_cond_signal: %s\n", strerror(result));
             pthread_mutex_unlock(&queue->lock);
@@ -77,7 +73,7 @@ int connection_dequeue(connection_queue_t *queue) {
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
         return -1;
     }
-    while (queue->length == 0) {
+    while (queue->write_idx == queue->read_idx) {
         if ((result = pthread_cond_wait(&queue->queue_empty, &queue->lock)) != 0) {
             fprintf(stderr, "pthread_cond_wait: %s\n", strerror(result));
             return -1;
@@ -92,11 +88,6 @@ int connection_dequeue(connection_queue_t *queue) {
         return -1;
     } else {
         int temp = queue->client_fds[queue->read_idx];
-        queue->length--;
-        queue->read_idx++;
-        if (queue->read_idx < 4) {
-            queue->read_idx = 0;
-        }
         if ((result = pthread_cond_signal(&queue->queue_empty)) != 0) {
             fprintf(stderr, "pthread_cond_signal: %s\n", strerror(result));
             pthread_mutex_unlock(&queue->lock);
@@ -113,17 +104,23 @@ int connection_dequeue(connection_queue_t *queue) {
 
 int connection_queue_shutdown(connection_queue_t *queue) {
     int result;
+
     if ((result = pthread_mutex_lock(&queue->lock)) != 0) {
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
         return -1;
     }
-
+    queue->shutdown = 0;
     if ((result = pthread_cond_broadcast(&queue->queue_empty)) != 0) {
         fprintf(stderr, "pthread_cond_signal: %s\n", strerror(result));
         pthread_mutex_unlock(&queue->lock);
         return -1;
     }
-    queue->shutdown = 0;
+    if ((result = pthread_cond_broadcast(&queue->queue_full)) != 0) {
+        fprintf(stderr, "pthread_cond_signal: %s\n", strerror(result));
+        pthread_mutex_unlock(&queue->lock);
+        return -1;
+    }
+    
     if ((result = pthread_mutex_unlock(&queue->lock)) != 0) {
         fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
         return -1;
@@ -133,16 +130,10 @@ int connection_queue_shutdown(connection_queue_t *queue) {
 }
 
 int connection_queue_free(connection_queue_t *queue) {
-    int result;
-    if ((result = pthread_mutex_lock(&queue->lock)) != 0) {
-        fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
-        return -1;
-    }
-    // free(queue->client_fds);
-    if ((result = pthread_mutex_unlock(&queue->lock)) != 0) {
-        fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
-        return -1;
-    }
+
+    pthread_mutex_destroy(&queue->lock);
+    pthread_cond_destroy(&queue->queue_empty);
+    pthread_cond_destroy(&queue->queue_full);
         
     return 0;
 }

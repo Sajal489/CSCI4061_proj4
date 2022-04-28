@@ -1,0 +1,38 @@
+* (TEST 1) Retrieve all files concurrently
+COMMENTS:
+Launches one 'curl' client per file to retrieve from the server and
+checks that all are successful.
+
+** program: bash -v
+
+** --- Failure messages --- 
+- FAILURE(137) due to TIMEOUT: Runtime exceeded maximum of '10s'
+- FAILURE: Output Mismatch at lines marked
+
+** --- Side by Side Differences ---
+- Expect output in: test-results/raw/http_server-01-expect.tmp
+- Actual output in: test-results/raw/http_server-01-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+#+BEGIN_SRC sbs-diff
+==== EXPECT ====                             ==== ACTUAL ====                          
+>> ./run_concurrent_server_tests.sh          >> ./run_concurrent_server_tests.sh
+Starting HTTP Server                         Starting HTTP Server
+Starting request for file quote.txt          Starting request for file quote.txt
+Starting request for file headers.html       Starting request for file headers.html
+Starting request for file index.html         Starting request for file index.html
+Starting request for file courses.txt        Starting request for file courses.txt
+Starting request for file mt2_practice.pdf   Starting request for file mt2_practice.pdf
+Starting request for file gatsby.txt         Starting request for file gatsby.txt
+Starting request for file africa.jpg         Starting request for file africa.jpg
+Starting request for file ocelot.jpg         Starting request for file ocelot.jpg
+Starting request for file hard_drive.png     Starting request for file hard_drive.png
+Starting request for file Lec01.pdf          Starting request for file Lec01.pdf
+Waiting for HTTP responses                   Waiting for HTTP responses
+All HTTP responses received                  All HTTP responses received
+Sending SIGINT to trigger server shutdown    Sending SIGINT to trigger server shutdown
+Server has terminated                      <
+#+END_SRC
+
+** --- Line Differences ---
+EXPECT:  16) Server has terminated
+

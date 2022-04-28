@@ -161,6 +161,7 @@ int main(int argc, char **argv)
         perror("close");
         return 1;
     }
+
    
     for (int i = 0; i < N_THREADS; i++){
         if (pthread_join(threads[i], NULL) != 0){
@@ -168,5 +169,7 @@ int main(int argc, char **argv)
             return 1;
         }
     }
+
+    connection_queue_free(&queue);
     return 0;
 }
