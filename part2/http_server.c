@@ -14,46 +14,36 @@
 
 #define BUFSIZE 512
 #define LISTEN_QUEUE_LEN 5
-#define N_THREADS 5
+#define N_THREADS 12
 
 int keep_going = 1;
-const char *serve_dir;
+char *serve_dir;
 connection_queue_t queue;
 
 void handle_sigint(int signo)
 {
-    connection_queue_shutdown(&queue); // error check
+    connection_queue_shutdown(&queue);
     keep_going = 0;
 }
 void *thread_func(void *arg)
 {
-    int favi = *((int*) arg);
-    if (!favi)
-        printf("Wating for client connection\n");
-
+    char *server_dir = (char *) arg;
+    
     int new_socket = connection_dequeue(&queue);
-
-    if (!favi)
-        printf("New client connected\n");
-    favi = 0;
+   
     char resource_name[512];
     bzero(resource_name, sizeof(resource_name));
-
     if (read_http_request(new_socket, resource_name) != 0)
     {
-        fprintf(stderr, "read_http_request failed\n");
+        printf("read_http_request failed");
         close(new_socket);
         return NULL;
     }
-    if (strcmp(resource_name, "/favicon.ico") == 0)
-    {
-        favi = 1;
-        return NULL;
-    }
+
 
     char path[512];
     bzero(path, sizeof(path));
-    strcat(path, serve_dir);
+    strcat(path, server_dir); // error check
     if (strcmp(resource_name, "/") == 0)
         strcat(path, "/index.html");
     else
@@ -65,7 +55,6 @@ void *thread_func(void *arg)
         close(new_socket);
         return NULL;
     }
-    close(new_socket);
     return NULL;
 }
 
@@ -78,9 +67,8 @@ int main(int argc, char **argv)
         printf("Usage: %s <directory> <port>\n", argv[0]);
         return 1;
     }
-    const char *serve_dir = argv[1];
-    const char *port = argv[2];
-    printf("%s", serve_dir);
+    char *serve_dir = argv[1];
+    char *port = argv[2];
 
     struct sigaction sigact;
     sigact.sa_handler = handle_sigint;
@@ -138,13 +126,13 @@ int main(int argc, char **argv)
 
     pthread_t threads[N_THREADS];
     int result = 0;
-    int favi = 0;
     sigset_t mask, old_set;
+    sigemptyset(&mask);
     sigfillset(&mask);
     sigprocmask(SIG_BLOCK, &mask, &old_set);
     for (int i = 0; i < N_THREADS; i++)
     {
-        if ((result = pthread_create(threads + i, NULL, thread_func, &favi)) == -1)
+        if ((result = pthread_create(threads + i, NULL, thread_func, serve_dir)) == -1)
         {
             fprintf(stderr, "pthread_create: %s\n", strerror(result));
             return 1;
@@ -173,11 +161,9 @@ int main(int argc, char **argv)
         perror("close");
         return 1;
     }
-    connection_queue_free(&queue);
-    for (int i = 0; i < N_THREADS; i++)
-    {
-        if (pthread_join(threads[i], NULL) != 0)
-        {
+   
+    for (int i = 0; i < N_THREADS; i++){
+        if (pthread_join(threads[i], NULL) != 0){
             fprintf(stderr, "Failed to join threads\n");
             return 1;
         }

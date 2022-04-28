@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/hard_drive.png > downloaded_files/hard_drive.png
+>> diff -q server_files/hard_drive.png downloaded_files/hard_drive.png

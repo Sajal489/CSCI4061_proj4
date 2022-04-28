@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/index.html > downloaded_files/index.html
+>> diff -q server_files/index.html downloaded_files/index.html

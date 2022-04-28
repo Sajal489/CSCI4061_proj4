@@ -50,8 +50,12 @@ int connection_enqueue(connection_queue_t *queue, int connection_fd) {
         }
         return -1;
     } else {
-        queue->client_fds[queue->length] = connection_fd;
+        queue->client_fds[queue->write_idx] = connection_fd;
         queue->length++;
+        queue->write_idx++;
+        if (queue->write_idx < 4) {
+            queue->write_idx = 0;
+        }
         if ((result = pthread_cond_signal(&queue->queue_empty)) != 0) {
             fprintf(stderr, "pthread_cond_signal: %s\n", strerror(result));
             pthread_mutex_unlock(&queue->lock);
@@ -87,6 +91,12 @@ int connection_dequeue(connection_queue_t *queue) {
         }
         return -1;
     } else {
+        int temp = queue->client_fds[queue->read_idx];
+        queue->length--;
+        queue->read_idx++;
+        if (queue->read_idx < 4) {
+            queue->read_idx = 0;
+        }
         if ((result = pthread_cond_signal(&queue->queue_empty)) != 0) {
             fprintf(stderr, "pthread_cond_signal: %s\n", strerror(result));
             pthread_mutex_unlock(&queue->lock);
@@ -96,7 +106,7 @@ int connection_dequeue(connection_queue_t *queue) {
             fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
             return -1;
         }
-        return queue->client_fds[queue->length--];
+        return temp;
     }    
     return 0;
 }
