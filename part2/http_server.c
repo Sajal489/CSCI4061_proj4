@@ -22,7 +22,7 @@ connection_queue_t queue;
 
 void handle_sigint(int signo)
 {
-    connection_queue_shutdown(&queue);
+    connection_queue_shutdown(&queue); // error check
     keep_going = 0;
 }
 void *thread_func(void *arg)
@@ -41,7 +41,7 @@ void *thread_func(void *arg)
 
     if (read_http_request(new_socket, resource_name) != 0)
     {
-        fprintf(stderr, "read_http_request failed");
+        fprintf(stderr, "read_http_request failed\n");
         close(new_socket);
         return NULL;
     }
@@ -61,7 +61,7 @@ void *thread_func(void *arg)
 
     if (write_http_response(new_socket, path) != 0)
     {
-        fprintf(stderr, "write_http_request failed");
+        fprintf(stderr, "write_http_request failed\n");
         close(new_socket);
         return NULL;
     }

@@ -8,9 +8,9 @@ int connection_queue_init(connection_queue_t *queue) {
     // allocate memory
     // initialize syncrhonization primitives
     // mutexes and condition variables
-    memset(queue->client_fds, 0, sizeof(int)*CAPACITY);
+    memset(&queue->client_fds, 0, sizeof(int)*CAPACITY);
     queue->length = 0;
-    queue->read_idx = 0; // not sure what these two idx do
+    queue->read_idx = 0; 
     queue->write_idx = 0;
     queue->shutdown = 1; // change to 0 for shutdown
     int result;
@@ -128,7 +128,7 @@ int connection_queue_free(connection_queue_t *queue) {
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
         return -1;
     }
-    free(queue);
+    // free(queue->client_fds);
     if ((result = pthread_mutex_unlock(&queue->lock)) != 0) {
         fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
         return -1;
