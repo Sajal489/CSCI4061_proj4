@@ -30,7 +30,6 @@ int connection_queue_init(connection_queue_t *queue) {
 }
 
 int connection_enqueue(connection_queue_t *queue, int connection_fd) {
-    // TODO Not yet implemented
     int result;
     if ((result = pthread_mutex_lock(&queue->lock)) != 0) {
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
@@ -136,19 +135,13 @@ int connection_queue_shutdown(connection_queue_t *queue) {
 
 int connection_queue_free(connection_queue_t *queue) {
     int result;
-    // printf("\n111111\n");
-
     if ((result = pthread_mutex_unlock(&queue->lock)) != 0) {
         fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
         return -1;
     }
-    // printf("\n333333\n");
     pthread_cond_destroy(&queue->queue_full);
-    // printf("%d\n", queue->read_idx);
     pthread_mutex_destroy(&queue->lock);
-    // printf("%d\n", queue->write_idx);
     pthread_cond_broadcast(&queue->queue_empty); // ensure that all waiting threads move on
-    // printf("\n4444444\n");
     pthread_cond_destroy(&queue->queue_empty); // problem child when thread_join commented out
     // printf("\n222222\n");
         
