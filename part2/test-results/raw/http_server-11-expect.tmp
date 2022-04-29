@@ -1,0 +1,2 @@
+>> curl -s -S -w "Response Status Code: %{http_code}\n" http://localhost:$PORT/affordable_qpu.txt
+Response Status Code: 404

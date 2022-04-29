@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/Lec01.pdf > downloaded_files/Lec01.pdf
+>> diff -q server_files/Lec01.pdf downloaded_files/Lec01.pdf

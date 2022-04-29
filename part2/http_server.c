@@ -186,23 +186,21 @@ int main(int argc, char **argv)
         perror("close");
         return 1;
     }
-
-   
-    for (int i = 0; i < N_THREADS; i++){
-        if (pthread_join(threads[i], NULL) != 0){
-            fprintf(stderr, "Failed to join threads\n");
-            return 1;
-        }
-    }
     if (connection_queue_shutdown(&queue) == -1) {
         fprintf(stderr, "Failed to shutdown queue\n");
         return 1;
     }
-    // printf("\nbing bong\n");
-    if (connection_queue_free(&queue) == -1) {
-        fprintf(stderr, "failed to free queue\n");
-        return 1;
-    }
-    // printf("bong bing\n");
+    
+    //works when we have this commented
+    // for (int i = 0; i < N_THREADS; i++){
+    //     printf("Me\n");
+    //     if (pthread_join(threads[i], NULL) != 0){
+    //         fprintf(stderr, "Failed to join threads\n");
+    //         return 1;
+    //     }
+    // }
+
+
+
     return 0;
 }

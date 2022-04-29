@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/mt2_practice.pdf > downloaded_files/mt2_practice.pdf
+>> diff -q server_files/mt2_practice.pdf downloaded_files/mt2_practice.pdf
