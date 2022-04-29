@@ -39,7 +39,7 @@ int read_http_request(int fd, char *resource_name) {
     char *str = strtok(buf, " ");
     str = strtok(NULL, " ");//geting the file path
     if(str == NULL)return 1;
-    strcpy(resource_name, str);
+    strcpy(resource_name, str); // need to error check this?
     // end copied section
 
     return 0;

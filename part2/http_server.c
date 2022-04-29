@@ -22,7 +22,6 @@ connection_queue_t queue;
 
 void handle_sigint(int signo)
 {
-    connection_queue_shutdown(&queue);
     keep_going = 0;
 }
 void *thread_func(void *arg)
@@ -30,6 +29,10 @@ void *thread_func(void *arg)
     char *server_dir = (char *) arg;
     
     int new_socket = connection_dequeue(&queue);
+    if (new_socket == -1) {
+        printf("new_socket failed");
+        return NULL;
+    }
    
     char resource_name[512];
     bzero(resource_name, sizeof(resource_name));
@@ -43,7 +46,7 @@ void *thread_func(void *arg)
 
     char path[512];
     bzero(path, sizeof(path));
-    strcat(path, server_dir); // error check
+    strcat(path, server_dir); 
     if (strcmp(resource_name, "/") == 0)
         strcat(path, "/index.html");
     else
@@ -72,7 +75,10 @@ int main(int argc, char **argv)
 
     struct sigaction sigact;
     sigact.sa_handler = handle_sigint;
-    sigfillset(&sigact.sa_mask);
+    if (sigfillset(&sigact.sa_mask) == -1) {
+        perror("sigfillset");
+        return 1;
+    }
     sigact.sa_flags = 0;
     if (sigaction(SIGINT, &sigact, NULL) == -1)
     {
@@ -127,9 +133,18 @@ int main(int argc, char **argv)
     pthread_t threads[N_THREADS];
     int result = 0;
     sigset_t mask, old_set;
-    sigemptyset(&mask);
-    sigfillset(&mask);
-    sigprocmask(SIG_BLOCK, &mask, &old_set);
+    if (sigemptyset(&mask) == -1) {
+        perror("sigemptyset");
+        return 1;
+    }
+    if (sigfillset(&mask) == -1) {
+        perror("sigfillset");
+        return 1;
+    }
+    if (sigprocmask(SIG_BLOCK, &mask, &old_set) == -1) {
+        perror("sigprocmask");
+        return 1;
+    }
     for (int i = 0; i < N_THREADS; i++)
     {
         if ((result = pthread_create(threads + i, NULL, thread_func, serve_dir)) == -1)
@@ -138,7 +153,10 @@ int main(int argc, char **argv)
             return 1;
         }
     }
-    sigprocmask(SIG_SETMASK, &old_set, NULL);
+    if (sigprocmask(SIG_SETMASK, &old_set, NULL) == -1) {
+        perror("sigprocmask");
+        return 1;
+    }
     while (keep_going != 0)
     {
         int new_socket = accept(sock_fd, NULL, NULL);
@@ -153,7 +171,14 @@ int main(int argc, char **argv)
             else
                 break;
         }
-        connection_enqueue(&queue, new_socket);
+        if (connection_enqueue(&queue, new_socket) == -1) {
+            fprintf(stderr, "enqueue failed\n");
+            if (close(sock_fd) == -1) {
+                perror("close");
+                return 1;
+            }
+            return 1;
+        } 
     }
 
     if (close(sock_fd) == -1)
@@ -169,7 +194,15 @@ int main(int argc, char **argv)
             return 1;
         }
     }
-
-    connection_queue_free(&queue);
+    if (connection_queue_shutdown(&queue) == -1) {
+        fprintf(stderr, "Failed to shutdown queue\n");
+        return 1;
+    }
+    // printf("\nbing bong\n");
+    if (connection_queue_free(&queue) == -1) {
+        fprintf(stderr, "failed to free queue\n");
+        return 1;
+    }
+    // printf("bong bing\n");
     return 0;
 }
