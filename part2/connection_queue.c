@@ -4,10 +4,6 @@
 #include "connection_queue.h"
 
 int connection_queue_init(connection_queue_t *queue) {
-    // TODO Not yet implemented
-    // allocate memory
-    // initialize syncrhonization primitives
-    // mutexes and condition variables
     memset(&queue->client_fds, 0, sizeof(int)*CAPACITY);
     queue->length = CAPACITY;
     queue->read_idx = 0; 
@@ -74,7 +70,7 @@ int connection_dequeue(connection_queue_t *queue) {
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
         return -1;
     }
-    while (queue->write_idx == queue->read_idx) {
+    while (queue->write_idx == queue->read_idx) { // this while loop is where the threads hang, and server can't shutdown
         if ((result = pthread_cond_wait(&queue->queue_empty, &queue->lock)) != 0) {
             fprintf(stderr, "pthread_cond_wait: %s\n", strerror(result));
             return -1;
@@ -107,9 +103,8 @@ int connection_dequeue(connection_queue_t *queue) {
 
 int connection_queue_shutdown(connection_queue_t *queue) {
     int result;
-
     
-    if ((result = pthread_mutex_lock(&queue->lock)) != 0) {
+    if ((result = pthread_mutex_lock(&queue->lock)) != 0) { // technically unnecessary cuz only called by producer thread, after consumer threads all joined
         fprintf(stderr, "pthread_mutex_lock: %s\n", strerror(result));
         return -1;
     }
@@ -126,7 +121,7 @@ int connection_queue_shutdown(connection_queue_t *queue) {
         return -1;
     }
 
-    if ((result = pthread_mutex_unlock(&queue->lock)) != 0) {
+    if ((result = pthread_mutex_unlock(&queue->lock)) != 0) { // technically unnecessary
         fprintf(stderr, "pthread_mutex_unlock: %s\n", strerror(result));
         return -1;
     }
@@ -140,7 +135,6 @@ int connection_queue_shutdown(connection_queue_t *queue) {
 }
 
 int connection_queue_free(connection_queue_t *queue) {
-
     int result;
     if((result = pthread_mutex_destroy(&queue->lock)) == -1){
         fprintf(stderr, "pthread_mutex_destroy(lock): %s\n", strerror(result));

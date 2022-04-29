@@ -191,7 +191,8 @@ int main(int argc, char **argv)
         return 1;
     }
     
-    //works when we have this commented
+    // works when we have this commented, meaning that our threads are hanging, most likely
+    // waiting for some signal or lock
     // for (int i = 0; i < N_THREADS; i++){
     //     printf("Me\n");
     //     if (pthread_join(threads[i], NULL) != 0){

@@ -67,7 +67,7 @@ int write_http_response(int fd, const char *resource_path) {
         sprintf(response,"HTTP/1.0 200 OK\r\nContent-Type: %s\nContent-Length: %ld\r\n\r\n",get_mime_type(f_extension), buf->st_size);
     }
     free(buf);
-    fprintf(stderr, "%s", response);
+    // fprintf(stderr, "%s", response);
     if(write(fd, response, strlen(response)) < 0){
         fprintf(stderr, "failed to write reponse to client");
         return 1;
@@ -88,8 +88,11 @@ int write_http_response(int fd, const char *resource_path) {
         }
     }
     
-    
-    close(file);
+    if (close(file) == -1)
+    {
+        perror("close");
+        return 1;
+    }
 
     return 0;
 }
