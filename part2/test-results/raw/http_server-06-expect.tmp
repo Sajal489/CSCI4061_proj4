@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/gatsby.txt > downloaded_files/gatsby.txt
+>> diff -q server_files/gatsby.txt downloaded_files/gatsby.txt

@@ -33,9 +33,13 @@ int main(int argc, char **argv) {
 
     struct sigaction sigact;
     sigact.sa_handler = handle_sigint;
-    sigfillset(&sigact.sa_mask);
+    if (sigfillset(&sigact.sa_mask) == -1) {
+        perror("sigfillset");
+        return 1;
+    }
     sigact.sa_flags = 0;
-    if(sigaction(SIGINT, &sigact, NULL) == -1){
+    if (sigaction(SIGINT, &sigact, NULL) == -1)
+    {
         perror("sigaction");
         return 1;
     }

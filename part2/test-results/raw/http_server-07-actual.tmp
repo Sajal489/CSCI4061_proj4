@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/africa.jpg > downloaded_files/africa.jpg
+>> diff -q server_files/africa.jpg downloaded_files/africa.jpg

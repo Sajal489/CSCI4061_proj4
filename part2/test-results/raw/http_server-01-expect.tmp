@@ -1,0 +1,2 @@
+>> curl -s -S http://localhost:$PORT/quote.txt > downloaded_files/quote.txt
+>> diff -q server_files/quote.txt downloaded_files/quote.txt

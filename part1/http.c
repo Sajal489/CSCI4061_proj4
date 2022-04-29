@@ -51,6 +51,9 @@ int write_http_response(int fd, const char *resource_path) {
     bzero(response, sizeof(response));
     struct stat *buf;
     buf  = malloc(sizeof(struct stat));
+    if(buf == NULL){
+        fprintf(stderr, "failed to malloc buffer");
+    }
     char *error_file = "server_files/error.html";
     int file;
     if(stat(resource_path, buf) == -1){
